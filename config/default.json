@@ -1,0 +1,39 @@
+{
+  "server": {
+    "port": 8000,
+    "host": "0.0.0.0",
+    "logLevel": "info"
+  },
+  "sandbox": {
+    "initialCapital": 1000000,
+    "currency": "INR",
+    "defaultSegments": ["equity", "commodity"],
+    "persistence": "sqlite",
+    "dbPath": "/data/sandbox.db",
+    "resetPortfolioOnRestart": false
+  },
+  "upstream": {
+    "baseUrl": "https://api.kite.trade",
+    "wsUrl": "wss://ws.kite.trade",
+    "timeout": 10000,
+    "retries": 2
+  },
+  "orderEngine": {
+    "defaultSlippage": 0.0,
+    "slippageModel": "percentage",
+    "fixedSlippage": 0.05,
+    "simulatePartialFills": false,
+    "marketOrderFillDelay": 0,
+    "autoFillLimitOrders": true,
+    "rejectAfterMarketHours": false
+  },
+  "rateLimits": {
+    "enabled": true,
+    "quote": 1,
+    "historical": 3,
+    "orders": 10,
+    "default": 10,
+    "ordersPerMinute": 200,
+    "ordersPerDay": 3000
+  }
+}
