@@ -1,0 +1,57 @@
+export const EXCHANGES = ['NSE', 'BSE', 'NFO', 'CDS', 'BFO', 'MCX', 'BCD'] as const;
+
+export const PRODUCT_TYPES = ['CNC', 'NRML', 'MIS', 'MTF'] as const;
+
+export const ORDER_TYPES = ['MARKET', 'LIMIT', 'SL', 'SL-M'] as const;
+
+export const TRANSACTION_TYPES = ['BUY', 'SELL'] as const;
+
+export const VARIETIES = ['regular', 'amo', 'co', 'iceberg', 'auction'] as const;
+
+export const VALIDITY_TYPES = ['DAY', 'IOC', 'TTL'] as const;
+
+export const ORDER_STATUSES = {
+  COMPLETE: 'COMPLETE',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED',
+  OPEN: 'OPEN',
+  OPEN_PENDING: 'OPEN PENDING',
+  VALIDATION_PENDING: 'VALIDATION PENDING',
+  PUT_ORDER_REQ_RECEIVED: 'PUT ORDER REQ RECEIVED',
+  TRIGGER_PENDING: 'TRIGGER PENDING',
+  MODIFY_PENDING: 'MODIFY PENDING',
+  MODIFY_VALIDATION_PENDING: 'MODIFY VALIDATION PENDING',
+  CANCEL_PENDING: 'CANCEL PENDING',
+  AMO_REQ_RECEIVED: 'AMO REQ RECEIVED',
+  UPDATE: 'UPDATE',
+  NOT_MODIFIED: 'NOT MODIFIED',
+  NOT_CANCELLED: 'NOT CANCELLED',
+} as const;
+
+export const ERROR_TYPES = {
+  TOKEN: 'TokenException',
+  INPUT: 'InputException',
+  ORDER: 'OrderException',
+  MARGIN: 'MarginException',
+  HOLDING: 'HoldingException',
+  NETWORK: 'NetworkException',
+  DATA: 'DataException',
+  GENERAL: 'GeneralException',
+} as const;
+
+export const MIS_MARGIN_PERCENTAGE = 0.20;
+export const NRML_MARGIN_PERCENTAGE = 0.50;
+
+export const CANCELLABLE_STATUSES = new Set<string>([
+  ORDER_STATUSES.OPEN,
+  ORDER_STATUSES.OPEN_PENDING,
+  ORDER_STATUSES.TRIGGER_PENDING,
+  ORDER_STATUSES.AMO_REQ_RECEIVED,
+]);
+
+export const MODIFIABLE_STATUSES = new Set<string>([
+  ORDER_STATUSES.OPEN,
+  ORDER_STATUSES.OPEN_PENDING,
+  ORDER_STATUSES.TRIGGER_PENDING,
+  ORDER_STATUSES.AMO_REQ_RECEIVED,
+]);

@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.env
+*.db
+*.db-wal
+*.db-shm
+coverage
+.vitest
+tests
+*.md
+LICENSE
