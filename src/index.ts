@@ -1,5 +1,6 @@
 import { loadConfig } from './config.js';
 import { buildApp } from './server.js';
+import { logRecord } from './logging/file-logger.js';
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -17,7 +18,25 @@ async function main(): Promise<void> {
 
   try {
     await app.listen({ port: config.server.port, host: config.server.host });
-    app.log.info(`Kite Connect Sandbox running at http://${config.server.host}:${config.server.port}`);
+
+    if (config.mode === 'proxy') {
+      console.log(`🚀 Kite Connect Sandbox starting in PROXY mode`);
+      console.log(`   Upstream: ${config.upstream.baseUrl}`);
+      console.log(`   Port: ${config.server.port}`);
+      console.log(`   All order endpoints will be forwarded to upstream`);
+      console.log(`   Note: HTTPS is handled by Nginx — this app listens on plain HTTP`);
+
+      logRecord({
+        level: 'info',
+        message: 'PROXY_STARTED',
+        data: { mode: 'proxy', upstream: config.upstream.baseUrl, port: config.server.port },
+      });
+    } else {
+      console.log(`🚀 Kite Connect Sandbox starting in SANDBOX mode`);
+      console.log(`   Upstream: ${config.upstream.baseUrl}`);
+      console.log(`   Port: ${config.server.port}`);
+      console.log(`   Orders will be simulated locally`);
+    }
   } catch (err) {
     app.log.error(err);
     process.exit(1);

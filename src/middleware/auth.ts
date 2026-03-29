@@ -48,8 +48,10 @@ export const authPlugin = fp(
       request.apiKey = auth.apiKey;
       request.accessToken = auth.accessToken;
 
-      // Auto-create portfolio for sandbox endpoints
-      ensurePortfolio(fastify, auth.apiKey);
+      // Auto-create portfolio for sandbox mode only (proxy mode has no local DB)
+      if (fastify.config.mode !== 'proxy') {
+        ensurePortfolio(fastify, auth.apiKey);
+      }
     });
   },
   { name: 'auth' },

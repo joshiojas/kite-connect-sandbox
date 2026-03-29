@@ -33,6 +33,8 @@ export function loadConfig(): AppConfig {
   const defaults = loadJsonConfig();
 
   return {
+    mode: envString('SANDBOX_MODE', defaults.mode) as 'sandbox' | 'proxy',
+    logFilePath: envString('LOG_FILE_PATH', defaults.logFilePath),
     server: {
       port: envNumber('SANDBOX_PORT', defaults.server.port),
       host: envString('SANDBOX_HOST', defaults.server.host),
@@ -57,6 +59,7 @@ export function loadConfig(): AppConfig {
     },
     rateLimits: {
       ...defaults.rateLimits,
+      enforceInProxyMode: envBool('SANDBOX_RATE_LIMIT_PROXY', defaults.rateLimits.enforceInProxyMode),
     },
   };
 }

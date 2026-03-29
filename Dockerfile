@@ -10,8 +10,8 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Create data directory for SQLite
-RUN mkdir -p /data && chown -R node:node /data
+# Create data directory for SQLite and logs
+RUN mkdir -p /data /data/logs && chown -R node:node /data
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules

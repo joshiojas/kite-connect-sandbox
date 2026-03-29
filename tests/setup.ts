@@ -9,6 +9,8 @@ let mockUrl: string;
 
 export function getTestConfig(): AppConfig {
   return {
+    mode: 'sandbox',
+    logFilePath: '',
     server: {
       port: 0,
       host: '127.0.0.1',
@@ -45,12 +47,22 @@ export function getTestConfig(): AppConfig {
       default: 100,
       ordersPerMinute: 10000,
       ordersPerDay: 100000,
+      enforceInProxyMode: true,
     },
   };
 }
 
-export async function createTestApp(): Promise<FastifyInstance> {
+export function getProxyTestConfig(logFilePath?: string): AppConfig {
   const config = getTestConfig();
+  return {
+    ...config,
+    mode: 'proxy',
+    logFilePath: logFilePath ?? '',
+  };
+}
+
+export async function createTestApp(configOverride?: AppConfig): Promise<FastifyInstance> {
+  const config = configOverride ?? getTestConfig();
   const testApp = await buildApp(config);
   await testApp.ready();
   return testApp;

@@ -38,9 +38,12 @@ export interface RateLimitsConfig {
   default: number;
   ordersPerMinute: number;
   ordersPerDay: number;
+  enforceInProxyMode: boolean;
 }
 
 export interface AppConfig {
+  mode: 'sandbox' | 'proxy';
+  logFilePath: string;
   server: ServerConfig;
   sandbox: SandboxConfig;
   upstream: UpstreamConfig;

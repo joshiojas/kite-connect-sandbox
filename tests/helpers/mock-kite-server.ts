@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import formbody from '@fastify/formbody';
 import type { FastifyInstance } from 'fastify';
 
 let mockServer: FastifyInstance | null = null;
@@ -6,6 +7,9 @@ let mockPort = 0;
 
 export async function startMockKiteServer(): Promise<{ url: string; port: number }> {
   const app = Fastify({ logger: false });
+
+  // Parse form-encoded bodies (needed for proxied POST/PUT requests)
+  await app.register(formbody);
 
   // POST /session/token
   app.post('/session/token', async () => {
@@ -160,6 +164,109 @@ export async function startMockKiteServer(): Promise<{ url: string; port: number
       status: 'success',
       data: [{ total_charges: 15.5, gst: { igst: 2.79, cgst: 0, sgst: 0, total: 2.79 } }],
     };
+  });
+
+  // --- Order endpoints (used in proxy mode tests) ---
+
+  // POST /orders/:variety — Place order
+  app.post('/orders/:variety', async (request) => {
+    const body = request.body as Record<string, string>;
+    return {
+      status: 'success',
+      data: { order_id: 'mock_order_123' },
+      _echo: body, // echo body for test verification
+    };
+  });
+
+  // PUT /orders/:variety/:order_id — Modify order
+  app.put('/orders/:variety/:order_id', async (request) => {
+    const body = request.body as Record<string, string>;
+    const params = request.params as Record<string, string>;
+    return {
+      status: 'success',
+      data: { order_id: params.order_id },
+      _echo: body,
+    };
+  });
+
+  // DELETE /orders/:variety/:order_id — Cancel order
+  app.delete('/orders/:variety/:order_id', async (request) => {
+    const params = request.params as Record<string, string>;
+    return {
+      status: 'success',
+      data: { order_id: params.order_id },
+    };
+  });
+
+  // GET /orders — List orders
+  app.get('/orders', async () => {
+    return { status: 'success', data: [] };
+  });
+
+  // GET /orders/:order_id — Order history
+  app.get('/orders/:order_id', async () => {
+    return { status: 'success', data: [] };
+  });
+
+  // GET /orders/:order_id/trades — Order trades
+  app.get('/orders/:order_id/trades', async () => {
+    return { status: 'success', data: [] };
+  });
+
+  // GET /trades — All trades
+  app.get('/trades', async () => {
+    return { status: 'success', data: [] };
+  });
+
+  // --- Portfolio endpoints (used in proxy mode tests) ---
+
+  // GET /portfolio/holdings
+  app.get('/portfolio/holdings', async () => {
+    return { status: 'success', data: [] };
+  });
+
+  // GET /portfolio/positions
+  app.get('/portfolio/positions', async () => {
+    return { status: 'success', data: { net: [], day: [] } };
+  });
+
+  // GET /user/margins
+  app.get('/user/margins', async () => {
+    return {
+      status: 'success',
+      data: {
+        equity: { enabled: true, net: 1000000, available: { cash: 1000000 } },
+        commodity: { enabled: true, net: 0, available: { cash: 0 } },
+      },
+    };
+  });
+
+  // GET /user/margins/:segment
+  app.get('/user/margins/:segment', async () => {
+    return {
+      status: 'success',
+      data: { enabled: true, net: 1000000, available: { cash: 1000000 } },
+    };
+  });
+
+  // --- GTT endpoints (used in proxy mode tests) ---
+
+  app.post('/gtt/triggers', async () => {
+    return { status: 'success', data: { trigger_id: 123 } };
+  });
+
+  app.get('/gtt/triggers', async () => {
+    return { status: 'success', data: [] };
+  });
+
+  // --- Error simulation endpoint ---
+
+  app.post('/orders/error_test', async (_request, reply) => {
+    reply.code(400).send({
+      status: 'error',
+      message: 'Insufficient funds',
+      error_type: 'MarginException',
+    });
   });
 
   // GET /mf/instruments
