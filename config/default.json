@@ -1,4 +1,6 @@
 {
+  "mode": "sandbox",
+  "logFilePath": "/data/logs/kite-proxy.log",
   "server": {
     "port": 8000,
     "host": "0.0.0.0",
@@ -34,6 +36,7 @@
     "orders": 10,
     "default": 10,
     "ordersPerMinute": 200,
-    "ordersPerDay": 3000
+    "ordersPerDay": 3000,
+    "enforceInProxyMode": true
   }
 }

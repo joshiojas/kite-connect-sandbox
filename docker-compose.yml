@@ -11,8 +11,13 @@ services:
       - SANDBOX_PERSISTENCE=${SANDBOX_PERSISTENCE:-sqlite}
       - SANDBOX_DB_PATH=/data/sandbox.db
       - SANDBOX_LOG_LEVEL=${SANDBOX_LOG_LEVEL:-info}
+      # Uncomment to run in proxy mode (forward all requests to upstream Kite API):
+      # - SANDBOX_MODE=proxy
+      # - LOG_FILE_PATH=/data/logs/kite-proxy.log
     volumes:
       - sandbox-data:/data
+      # Uncomment for proxy mode log persistence:
+      # - ./logs:/data/logs
     restart: unless-stopped
 
 volumes:

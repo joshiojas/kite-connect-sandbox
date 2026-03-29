@@ -52,6 +52,7 @@ Your Bot → Kite Sandbox (localhost:8000) → Kite Connect API (api.kite.trade)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `SANDBOX_MODE` | `sandbox` | `sandbox` for local simulation, `proxy` to forward to upstream |
 | `SANDBOX_PORT` | `8000` | Server port |
 | `SANDBOX_LOG_LEVEL` | `info` | Log level (trace, debug, info, warn, error, silent) |
 | `SANDBOX_INITIAL_CAPITAL` | `1000000` | Starting paper-trading capital (INR) |
@@ -227,6 +228,73 @@ src/
 ```bash
 npm run typecheck
 ```
+
+## Proxy Mode
+
+In addition to paper-trading simulation, the sandbox can run as a **transparent HTTP reverse proxy** that forwards all requests (including orders) to the real Kite API. This is useful for deploying on a server with a static IP to satisfy Zerodha's IP whitelisting requirement.
+
+### Why Proxy Mode?
+
+Starting April 2026, Zerodha requires static IP whitelisting for all order API calls. By deploying this proxy on an AWS Lightsail instance ($7/month with a free static IP), you can route all order traffic from your Lambdas/ECS tasks through a single whitelisted IP.
+
+### Architecture
+
+```
+Lambda/ECS ──HTTPS──► Nginx (SSL) ──HTTP──► Fastify app ──HTTPS──► api.kite.trade
+                      kite-api.mecadelle.live  localhost:8000        (orders forwarded)
+                      Lightsail + Static IP     Docker container
+```
+
+### Enabling Proxy Mode
+
+```bash
+SANDBOX_MODE=proxy  # Forward all requests to upstream Kite API
+```
+
+In proxy mode:
+- **All endpoints** (orders, portfolio, GTT, etc.) are forwarded to `KITE_BASE_URL`
+- **No local simulation** — no SQLite, no order engine
+- **Health check** and sandbox admin endpoints remain local
+- The server acts as a transparent HTTP reverse proxy with structured logging
+
+### Market Protection Safety Net
+
+In proxy mode, for `POST /orders/:variety` and `PUT /orders/:variety/:order_id`:
+- If `order_type=MARKET` or `order_type=SL-M` and `market_protection` is missing or `"0"`:
+  - Automatically sets `market_protection="-1"` (auto protection)
+- LIMIT and SL orders are left unchanged
+
+This prevents existing Lambda code from breaking when Zerodha starts rejecting unprotected market orders.
+
+### Structured JSONL Logging
+
+In proxy mode, all order mutations (POST/PUT/DELETE on `/orders/*`) are logged to a JSONL file:
+
+```bash
+LOG_FILE_PATH=/data/logs/kite-proxy.log  # Default path
+```
+
+Each log record is a single-line JSON object with fields: `timestamp`, `service` ("KiteProxy"), `level`, `type`, `message`, `data`.
+
+Log messages: `ORDER_FORWARDED`, `ORDER_REJECTED`, `ORDER_ERROR`, `RATE_LIMITED`, `MARKET_PROTECTION_INJECTED`, `HEALTH_CHECK`, `UPSTREAM_UNREACHABLE`, `PROXY_STARTED`.
+
+All records are also written to stdout for `docker logs` visibility.
+
+### Deploying on Lightsail
+
+See [`deploy/lightsail/README.md`](deploy/lightsail/README.md) for a step-by-step deployment guide covering:
+- Lightsail instance setup with static IP
+- Docker deployment in proxy mode
+- Nginx + Let's Encrypt HTTPS termination
+- DNS configuration
+
+### Proxy Mode Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SANDBOX_MODE` | `sandbox` | Set to `proxy` to enable forwarding mode |
+| `LOG_FILE_PATH` | `/data/logs/kite-proxy.log` | JSONL log file path (proxy mode only) |
+| `SANDBOX_RATE_LIMIT_PROXY` | `true` | Enforce client-side rate limiting in proxy mode |
 
 ## Limitations
 

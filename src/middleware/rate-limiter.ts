@@ -23,6 +23,9 @@ export const rateLimiterPlugin = fp(
 
     if (!config.enabled) return;
 
+    // In proxy mode, skip rate limiting if enforceInProxyMode is false
+    if (fastify.config.mode === 'proxy' && !config.enforceInProxyMode) return;
+
     fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
       if (request.url === '/health') return;
 

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  kite-proxy:
+    build: ../..
+    container_name: kite-proxy
+    ports:
+      - "127.0.0.1:8000:8000"  # localhost only — nginx proxies to this
+    env_file:
+      - .env
+    environment:
+      - SANDBOX_MODE=proxy
+      - SANDBOX_PORT=8000
+      - LOG_FILE_PATH=/data/logs/kite-proxy.log
+    volumes:
+      - ./logs:/data/logs
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
